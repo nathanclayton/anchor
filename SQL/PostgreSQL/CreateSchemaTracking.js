@@ -9,13 +9,12 @@ if(schema.serialization) {
 -- Schema table -------------------------------------------------------------------------------------------------------
 -- The schema table holds every xml that has been executed against the database
 -----------------------------------------------------------------------------------------------------------------------
-IF Object_ID('$schema.metadata.encapsulation$._Schema', 'U') IS NULL
-   CREATE TABLE [$schema.metadata.encapsulation].[_Schema] (
-      [version] int identity(1, 1) not null primary key,
-      [activation] $schema.metadata.chronon not null,
-      [schema] xml not null
-   );
-GO
+CREATE TABLE IF NOT EXISTS $schema.metadata.encapsulation$.schema_evolution (
+	schema_version bigint primary key nextval('public.seq_bigint')
+	schema_activation $schema.metadata.chronon not null default current_timestamp,
+	schema_json json not null
+);
+
 -- Insert the XML schema (as of now)
 INSERT INTO [$schema.metadata.encapsulation].[_Schema] (
    [activation],
@@ -41,7 +40,7 @@ SELECT
 	[schema].value('schema[1]/@format', 'nvarchar(max)') as [format],
 	[schema].value('schema[1]/@date', 'date') as [date],
 	[schema].value('schema[1]/@time', 'time(0)') as [time],
-	[schema].value('schema[1]/metadata[1]/@temporalization', 'nvarchar(max)') as [temporalization], 
+	[schema].value('schema[1]/metadata[1]/@temporalization', 'nvarchar(max)') as [temporalization],
 	[schema].value('schema[1]/metadata[1]/@databaseTarget', 'nvarchar(max)') as [databaseTarget],
 	[schema].value('schema[1]/metadata[1]/@changingRange', 'nvarchar(max)') as [changingRange],
 	[schema].value('schema[1]/metadata[1]/@encapsulation', 'nvarchar(max)') as [encapsulation],
@@ -79,7 +78,7 @@ SELECT
 	[schema].value('schema[1]/metadata[1]/@equivalence', 'nvarchar(max)') as [equivalence],
 	[schema].value('schema[1]/metadata[1]/@equivalentSuffix', 'nvarchar(max)') as [equivalentSuffix],
 	[schema].value('schema[1]/metadata[1]/@equivalentRange', 'nvarchar(max)') as [equivalentRange]
-FROM 
+FROM
 	_Schema;
 GO
 -- Anchor view --------------------------------------------------------------------------------------------------------
@@ -461,7 +460,7 @@ BEGIN
           [ordinal]
        FOR XML PATH('')
    );
-   SELECT isnull(@xml.value('.', 'varchar(max)'), '');  
+   SELECT isnull(@xml.value('.', 'varchar(max)'), '');
 END
 GO
 -- Database Copy Script Generator -------------------------------------------------------------------------------------
@@ -475,7 +474,7 @@ CREATE PROCEDURE [$schema.metadata.encapsulation]._GenerateCopyScript (
 	@source varchar(123),
 	@target varchar(123)
 )
-as 
+as
 begin
 	declare @R char(1) = CHAR(13);
 	-- stores the built SQL code
@@ -484,8 +483,8 @@ begin
 
 	-- find which version of the schema that is in effect
 	declare @version int;
-	select 
-		@version = max([version]) 
+	select
+		@version = max([version])
 	from
 		_Schema;
 
@@ -502,29 +501,29 @@ begin
 		@positSuffix = positSuffix,
 		@temporalization = temporalization
 	from
-		_Schema_Expanded 
+		_Schema_Expanded
 	where
 		[version] = @version;
 
 	-- build non-equivalent knot copy
 	set @xml = (
-		select 
+		select
 			case
-				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' ON;' + @R 
+				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' ON;' + @R
 			end,
 			'INSERT INTO ' + [capsule] + '.' + [name] + '(' + [columns] + ')' + @R +
 			'SELECT ' + [columns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + ';' + @R,
 			case
-				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' OFF;' + @R 
+				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' OFF;' + @R
 			end
-		from 
+		from
 			_Knot x
 		cross apply (
 			select stuff((
-				select 
+				select
 					', ' + [name]
 				from
-					sys.columns 
+					sys.columns
 				where
 					[object_Id] = object_Id(x.[capsule] + '.' + x.[name])
 				and
@@ -539,28 +538,28 @@ begin
 		for xml path('')
 	);
 	set @sql = @sql + isnull(@xml.value('.', 'varchar(max)'), '');
-	
+
 	-- build equivalent knot copy
 	set @xml = (
-		select 
+		select
 			case
-				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @identitySuffix + ' ON;' + @R 
+				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @identitySuffix + ' ON;' + @R
 			end,
 			'INSERT INTO ' + [capsule] + '.' + [name] + '_' + @identitySuffix + '(' + [columns] + ')' + @R +
 			'SELECT ' + [columns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + '_' + @identitySuffix + ';' + @R,
 			case
-				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @identitySuffix + ' OFF;' + @R 
+				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @identitySuffix + ' OFF;' + @R
 			end,
 			'INSERT INTO ' + [capsule] + '.' + [name] + '_' + @equivalentSuffix + '(' + [columns] + ')' + @R +
 			'SELECT ' + [columns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + '_' + @equivalentSuffix + ';' + @R
-		from 
+		from
 			_Knot x
 		cross apply (
 			select stuff((
-				select 
+				select
 					', ' + [name]
 				from
-					sys.columns 
+					sys.columns
 				where
 					[object_Id] = object_Id(x.[capsule] + '.' + x.[name])
 				and
@@ -578,23 +577,23 @@ begin
 
 	-- build anchor copy
 	set @xml = (
-		select 
+		select
 			case
-				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' ON;' + @R 
+				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' ON;' + @R
 			end,
 			'INSERT INTO ' + [capsule] + '.' + [name] + '(' + [columns] + ')' + @R +
 			'SELECT ' + [columns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + ';' + @R,
 			case
-				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' OFF;' + @R 
+				when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + ' OFF;' + @R
 			end
-		from 
+		from
 			_Anchor x
 		cross apply (
 			select stuff((
-				select 
+				select
 					', ' + [name]
 				from
-					sys.columns 
+					sys.columns
 				where
 					[object_Id] = object_Id(x.[capsule] + '.' + x.[name])
 				and
@@ -612,25 +611,25 @@ begin
 	if (@temporalization = 'crt')
 	begin
 		set @xml = (
-			select 
+			select
 				case
-					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' ON;' + @R 
+					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' ON;' + @R
 				end,
 				'INSERT INTO ' + [capsule] + '.' + [name] + '_' + @positSuffix + '(' + [positColumns] + ')' + @R +
 				'SELECT ' + [positColumns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + '_' + @positSuffix + ';' + @R,
 				case
-					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' OFF;' + @R 
+					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' OFF;' + @R
 				end,
 				'INSERT INTO ' + [capsule] + '.' + [name] + '_' + @annexSuffix + '(' + [annexColumns] + ')' + @R +
 				'SELECT ' + [annexColumns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + '_' + @annexSuffix + ';' + @R
-			from 
+			from
 				_Attribute x
 			cross apply (
 				select stuff((
-					select 
+					select
 						', ' + [name]
 					from
-						sys.columns 
+						sys.columns
 					where
 						[object_Id] = object_Id(x.[capsule] + '.' + x.[name] + '_' + @positSuffix)
 					and
@@ -640,10 +639,10 @@ begin
 			) pc ([positColumns])
 			cross apply (
 				select stuff((
-					select 
+					select
 						', ' + [name]
 					from
-						sys.columns 
+						sys.columns
 					where
 						[object_Id] = object_Id(x.[capsule] + '.' + x.[name] + '_' + @annexSuffix)
 					and
@@ -659,17 +658,17 @@ begin
 	else -- uni
 	begin
 		set @xml = (
-			select 
+			select
 				'INSERT INTO ' + [capsule] + '.' + [name] + '(' + [columns] + ')' + @R +
 				'SELECT ' + [columns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + ';' + @R
-			from 
+			from
 				_Attribute x
 			cross apply (
 				select stuff((
-					select 
+					select
 						', ' + [name]
 					from
-						sys.columns 
+						sys.columns
 					where
 						[object_Id] = object_Id(x.[capsule] + '.' + x.[name])
 					and
@@ -688,25 +687,25 @@ begin
 	if (@temporalization = 'crt')
 	begin
 		set @xml = (
-			select 
+			select
 				case
-					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' ON;' + @R 
+					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' ON;' + @R
 				end,
 				'INSERT INTO ' + [capsule] + '.' + [name] + '_' + @positSuffix + '(' + [positColumns] + ')' + @R +
 				'SELECT ' + [positColumns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + '_' + @positSuffix + ';' + @R,
 				case
-					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' OFF;' + @R 
+					when [generator] = 'true' then 'SET IDENTITY_INSERT ' + [capsule] + '.' + [name] + '_' + @positSuffix + ' OFF;' + @R
 				end,
 				'INSERT INTO ' + [capsule] + '.' + [name] + '_' + @annexSuffix + '(' + [annexColumns] + ')' + @R +
 				'SELECT ' + [annexColumns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + '_' + @annexSuffix + ';' + @R
-			from 
+			from
 				_Tie x
 			cross apply (
 				select stuff((
-					select 
+					select
 						', ' + [name]
 					from
-						sys.columns 
+						sys.columns
 					where
 						[object_Id] = object_Id(x.[capsule] + '.' + x.[name] + '_' + @positSuffix)
 					and
@@ -716,10 +715,10 @@ begin
 			) pc ([positColumns])
 			cross apply (
 				select stuff((
-					select 
+					select
 						', ' + [name]
 					from
-						sys.columns 
+						sys.columns
 					where
 						[object_Id] = object_Id(x.[capsule] + '.' + x.[name] + '_' + @annexSuffix)
 					and
@@ -735,17 +734,17 @@ begin
 	else -- uni
 	begin
 		set @xml = (
-			select 
+			select
 				'INSERT INTO ' + [capsule] + '.' + [name] + '(' + [columns] + ')' + @R +
 				'SELECT ' + [columns] + ' FROM ' + @source + '.' + [capsule] + '.' + [name] + ';' + @R
-			from 
+			from
 				_Tie x
 			cross apply (
 				select stuff((
-					select 
+					select
 						', ' + [name]
 					from
-						sys.columns 
+						sys.columns
 					where
 						[object_Id] = object_Id(x.[capsule] + '.' + x.[name])
 					and
