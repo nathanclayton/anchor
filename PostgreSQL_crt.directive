@@ -1,7 +1,9 @@
-# This is the processing directive for concurrent-reliance-temporal Anchor Modeling in SQL Server
+# This is the processing directive for concurrent-reliance-temporal
+# Anchor Modeling in PostgreSQL
 SQL/Helpers.js
 SQL/PostgreSQL/HelpersOverride.js
 SQL/PostgreSQL/NamingConvention.js
+SQL/PostgreSQL/DatabaseInitialization.js
 SQL/PostgreSQL/crt/SetupPositorPartitioning.js
 SQL/PostgreSQL/crt/CreatePositorAndDefault.js
 SQL/PostgreSQL/crt/CreateKnots.js

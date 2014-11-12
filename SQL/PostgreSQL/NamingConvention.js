@@ -4,12 +4,15 @@
 var D = '_';
 
 // used in business naming
-var businessIdentity = 'Id';
+var businessIdentity = 'id';
 var businessName;
 
 // set some hard coded defaults if they are missing
-schema.metadata.encapsulation = schema.metadata.encapsulation || 'dbo';
-schema.metadata.chronon = schema.metadata.chronon || 'datetime';
+schema.metadata.encapsulation = schema.metadata.encapsulation || 'public';
+schema.metadata.chronon = schema.metadata.chronon || 'timestamptz';
+schema.metadata.identitySuffix = schema.metadata.identitySuffix || 'id';
+schema.metadata.equivalentSuffix = schema.metadata.equivalentSuffix || 'eq';
+schema.metadata.checksumSuffix = schema.metadata.checksumSuffix || 'ck';
 
 var knot;
 while (knot = schema.nextKnot()) {
@@ -17,7 +20,7 @@ while (knot = schema.nextKnot()) {
     knot.identityName = knot.name + D + schema.metadata.identitySuffix;
     knot.equivalentName = knot.name + D + schema.metadata.equivalentSuffix;
     knot.businessName = knot.descriptor;
-    knot.valueColumnName = knot.name;
+    knot.valueColumnName = 'knot_value';
     knot.identityColumnName = knot.mnemonic + D + schema.metadata.identitySuffix;
     knot.checksumColumnName = knot.mnemonic + D + schema.metadata.checksumSuffix;
     knot.equivalentColumnName = knot.mnemonic + D + schema.metadata.equivalentSuffix;
