@@ -16,21 +16,44 @@ CREATE TABLE IF NOT EXISTS $schema.metadata.encapsulation$.schema_evolution (
 );
 
 -- Insert the XML schema (as of now)
+<<<<<<< HEAD
 INSERT INTO $schema.metadata.encapsulation$.schema_evolution (
    schema_json
 )
 SELECT
    '$schema.serialization._serialization';
+=======
+INSERT INTO [$schema.metadata.encapsulation].[_Schema] (
+   [activation],
+   [schema]
+)
+SELECT
+   current_timestamp,
+   N'$schema.serialization._serialization';
+>>>>>>> bd200b163069e76ad774d8f923ab2e5ea5b8de17
 GO
 -- Schema expanded view -----------------------------------------------------------------------------------------------
 -- A view of the schema table that expands the XML attributes into columns
 -----------------------------------------------------------------------------------------------------------------------
+<<<<<<< HEAD
 CREATE OR REPLACE VIEW $schema.metadata.encapsulation$.schema_expanded
 AS
 SELECT
 	schema_version,
 	schema_activation,
 	schema_json,
+=======
+IF Object_ID('$schema.metadata.encapsulation$._Schema_Expanded', 'V') IS NOT NULL
+DROP VIEW [$schema.metadata.encapsulation].[_Schema_Expanded]
+GO
+
+CREATE VIEW [$schema.metadata.encapsulation].[_Schema_Expanded]
+AS
+SELECT
+	[version],
+	[activation],
+	[schema],
+>>>>>>> bd200b163069e76ad774d8f923ab2e5ea5b8de17
 	[schema].value('schema[1]/@format', 'nvarchar(max)') as [format],
 	[schema].value('schema[1]/@date', 'date') as [date],
 	[schema].value('schema[1]/@time', 'time(0)') as [time],
