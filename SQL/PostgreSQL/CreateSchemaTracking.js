@@ -31,50 +31,50 @@ SELECT
 	schema_version,
 	schema_activation,
 	schema_json,
-	[schema].value('schema[1]/@format', 'nvarchar(max)') as [format],
-	[schema].value('schema[1]/@date', 'date') as [date],
-	[schema].value('schema[1]/@time', 'time(0)') as [time],
-	[schema].value('schema[1]/metadata[1]/@temporalization', 'nvarchar(max)') as [temporalization],
-	[schema].value('schema[1]/metadata[1]/@databaseTarget', 'nvarchar(max)') as [databaseTarget],
-	[schema].value('schema[1]/metadata[1]/@changingRange', 'nvarchar(max)') as [changingRange],
-	[schema].value('schema[1]/metadata[1]/@encapsulation', 'nvarchar(max)') as [encapsulation],
-	[schema].value('schema[1]/metadata[1]/@identity', 'nvarchar(max)') as [identity],
-	[schema].value('schema[1]/metadata[1]/@metadataPrefix', 'nvarchar(max)') as [metadataPrefix],
-	[schema].value('schema[1]/metadata[1]/@metadataType', 'nvarchar(max)') as [metadataType],
-	[schema].value('schema[1]/metadata[1]/@metadataUsage', 'nvarchar(max)') as [metadataUsage],
-	[schema].value('schema[1]/metadata[1]/@changingSuffix', 'nvarchar(max)') as [changingSuffix],
-	[schema].value('schema[1]/metadata[1]/@identitySuffix', 'nvarchar(max)') as [identitySuffix],
-	[schema].value('schema[1]/metadata[1]/@positIdentity', 'nvarchar(max)') as [positIdentity],
-	[schema].value('schema[1]/metadata[1]/@positGenerator', 'nvarchar(max)') as [positGenerator],
-	[schema].value('schema[1]/metadata[1]/@positingRange', 'nvarchar(max)') as [positingRange],
-	[schema].value('schema[1]/metadata[1]/@positingSuffix', 'nvarchar(max)') as [positingSuffix],
-	[schema].value('schema[1]/metadata[1]/@positorRange', 'nvarchar(max)') as [positorRange],
-	[schema].value('schema[1]/metadata[1]/@positorSuffix', 'nvarchar(max)') as [positorSuffix],
-	[schema].value('schema[1]/metadata[1]/@reliabilityRange', 'nvarchar(max)') as [reliabilityRange],
-	[schema].value('schema[1]/metadata[1]/@reliabilitySuffix', 'nvarchar(max)') as [reliabilitySuffix],
-	[schema].value('schema[1]/metadata[1]/@reliableCutoff', 'nvarchar(max)') as [reliableCutoff],
-	[schema].value('schema[1]/metadata[1]/@deleteReliability', 'nvarchar(max)') as [deleteReliability],
-	[schema].value('schema[1]/metadata[1]/@reliableSuffix', 'nvarchar(max)') as [reliableSuffix],
-	[schema].value('schema[1]/metadata[1]/@partitioning', 'nvarchar(max)') as [partitioning],
-	[schema].value('schema[1]/metadata[1]/@entityIntegrity', 'nvarchar(max)') as [entityIntegrity],
-	[schema].value('schema[1]/metadata[1]/@restatability', 'nvarchar(max)') as [restatability],
-	[schema].value('schema[1]/metadata[1]/@idempotency', 'nvarchar(max)') as [idempotency],
-	[schema].value('schema[1]/metadata[1]/@assertiveness', 'nvarchar(max)') as [assertiveness],
-	[schema].value('schema[1]/metadata[1]/@naming', 'nvarchar(max)') as [naming],
-	[schema].value('schema[1]/metadata[1]/@positSuffix', 'nvarchar(max)') as [positSuffix],
-	[schema].value('schema[1]/metadata[1]/@annexSuffix', 'nvarchar(max)') as [annexSuffix],
-	[schema].value('schema[1]/metadata[1]/@chronon', 'nvarchar(max)') as [chronon],
-	[schema].value('schema[1]/metadata[1]/@now', 'nvarchar(max)') as [now],
-	[schema].value('schema[1]/metadata[1]/@dummySuffix', 'nvarchar(max)') as [dummySuffix],
-	[schema].value('schema[1]/metadata[1]/@statementTypeSuffix', 'nvarchar(max)') as [statementTypeSuffix],
-	[schema].value('schema[1]/metadata[1]/@checksumSuffix', 'nvarchar(max)') as [checksumSuffix],
-	[schema].value('schema[1]/metadata[1]/@businessViews', 'nvarchar(max)') as [businessViews],
-	[schema].value('schema[1]/metadata[1]/@equivalence', 'nvarchar(max)') as [equivalence],
-	[schema].value('schema[1]/metadata[1]/@equivalentSuffix', 'nvarchar(max)') as [equivalentSuffix],
-	[schema].value('schema[1]/metadata[1]/@equivalentRange', 'nvarchar(max)') as [equivalentRange]
+	json_extract_path_text(schema_json, 'schema', 'format') as schema_format,
+	json_extract_path_text(schema_json, 'schema', 'date')::date as schema_date,
+	json_extract_path_text(schema_json, 'schema', 'time')::time as schema_time,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'temporalization') as temporalization,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'databaseTarget') as database_target,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'changingRange') as changing_range,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'encapsulation') as encapsulation,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'identity') as identity,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'metadataPrefix') as metadata_prefix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'metadataType') as metadata_type,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'metadataUsage')::boolean as metadata_usage,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'changingSuffix') as changing_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'identitySuffix') as identity_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positIdentity') as posit_identity,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positGenerator')::boolean as posit_generator,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positingRange') as positing_range,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positingSuffix') as positing_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positorRange') as positor_range,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positorSuffix') as positor_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'reliabilityRange') as reliability_range,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'reliabilitySuffix') as reliability_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'reliableCutoff') as reliable_cutoff,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'deleteReliability') as delete_reliability,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'reliableSuffix') as reliable_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'partitioning')::boolean as partitioning,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'entityIntegrity')::boolean as entity_integrity,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'restatability')::boolean as restatability,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'idempotency')::boolean as idempotency,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'assertiveness')::boolean as assertiveness,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'naming') as naming,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'positSuffix') as posit_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'annexSuffix') as annex_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'chronon') as chronon,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'now') as now,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'dummySuffix') as dummy_suffix,
+  json_extract_path_text(schema_json, 'schema', 'metadata', 'statementTypeSuffix') as statement_type_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'checksumSuffix') as checksum_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'businessViews')::boolean as business_views,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'equivalence')::boolean as equivalence,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'equivalentSuffix') as equivalent_suffix,
+	json_extract_path_text(schema_json, 'schema', 'metadata', 'equivalentRange') as equivalent_range
 FROM
-	_Schema;
-GO
+	$schema.metadata.encapsulation$.schema_evolution;
+	
 -- Anchor view --------------------------------------------------------------------------------------------------------
 -- The anchor view shows information about all the anchors in a schema
 -----------------------------------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ IF Object_ID('$schema.metadata.encapsulation$._Attribute', 'V') IS NOT NULL
 DROP VIEW [$schema.metadata.encapsulation].[_Attribute]
 GO
 
-CREATE VIEW [$schema.metadata.encapsulation].[_Attribute]
+CREATE OR REPLACE VIEW $schema.metadata.encapsulation$.schema_attribute
 AS
 SELECT
    S.version,
@@ -158,7 +158,7 @@ SELECT
    Nodeset.attribute.value('@knotRange', 'nvarchar(max)') as [knotRange],
    Nodeset.attribute.value('@timeRange', 'nvarchar(max)') as [timeRange]
 FROM
-   [$schema.metadata.encapsulation].[_Schema] S
+   $schema.metadata.encapsulation$.schema_evolution S
 CROSS APPLY
    S.[schema].nodes('/schema/anchor') as ParentNodeset(anchor)
 OUTER APPLY
