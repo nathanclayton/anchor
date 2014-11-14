@@ -14,9 +14,9 @@
 --
 --------------------------------------------------------------------------------
 
-DO $do$
-DECLARE
-  _kind "char";
+DO
+DECLARE $$$$
+  _kind ""char"";
 BEGIN
   SELECT INTO _kind   c.relkind
   FROM   pg_class     c
@@ -38,6 +38,6 @@ BEGIN
     SELECT 'Name conflict with another object and public.seq_bigint';
   END IF;
 END
-$do$;
+$$$$;
 
 ~*/
